@@ -16,27 +16,6 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = sqliteTableCreator((name) => `bundown_${name}`);
 
-export const posts = createTable(
-  "post",
-  {
-    id: int("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-    name: text("name", { length: 256 }),
-    createdById: text("created_by", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: int("created_at", { mode: "timestamp" })
-      .default(sql`(unixepoch())`)
-      .notNull(),
-    updatedAt: int("updatedAt", { mode: "timestamp" }).$onUpdate(
-      () => new Date()
-    ),
-  },
-  (example) => ({
-    createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
-  })
-);
-
 export const users = createTable("user", {
   id: text("id", { length: 255 })
     .notNull()
@@ -114,3 +93,21 @@ export const verificationTokens = createTable(
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
   })
 );
+
+
+export const sprints = createTable("sprint", {
+  id: text("id", { length: 255 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name", { length: 255 }),
+  description: text("description", { length: 255 }),
+  startDate: int("start_date", {
+    mode: "timestamp",
+  }).default(sql`(unixepoch())`),
+  endDate: int("end_date", {
+    mode: "timestamp",
+  }).default(sql`(unixepoch())`),
+  status: text("status", { length: 255 }),
+  projectId: text("project_id", { length: 255 }).notNull(),
+});
